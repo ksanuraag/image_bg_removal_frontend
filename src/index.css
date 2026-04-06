@@ -152,6 +152,87 @@ img {
   gap: 20px;
 }
 
+.loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(180deg, rgba(8, 8, 8, 0.78), rgba(8, 8, 8, 0.92)),
+    radial-gradient(circle at top, rgba(255, 186, 111, 0.14), transparent 45%);
+  backdrop-filter: blur(12px);
+}
+
+.loading-card {
+  width: min(100%, 420px);
+  padding: 28px;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(180deg, rgba(27, 27, 27, 0.96), rgba(14, 14, 14, 0.98));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+
+.loading-ring {
+  display: grid;
+  place-items: center;
+  width: 116px;
+  height: 116px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at center, rgba(12, 12, 12, 0.96) 53%, transparent 54%),
+    conic-gradient(#ffb05c calc(var(--progress, 0) * 1%), rgba(255, 255, 255, 0.08) 0);
+}
+
+.loading-ring strong {
+  font-size: 1.65rem;
+  font-weight: 700;
+}
+
+.loading-copy {
+  display: grid;
+  gap: 8px;
+}
+
+.loading-eyebrow {
+  color: #ffb05c;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.loading-copy h2 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  line-height: 1.02;
+}
+
+.loading-copy p {
+  margin: 0;
+  color: #b7b7b7;
+}
+
+.progress-track {
+  margin-top: 22px;
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffb05c, #ffe39f);
+  box-shadow: 0 0 20px rgba(255, 176, 92, 0.4);
+  transition: width 220ms ease;
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -256,6 +337,43 @@ input[type="file"] {
 
 .error-text {
   color: #ff8e8e;
+}
+
+.compression-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.summary-pill {
+  min-width: 120px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.summary-pill span,
+.summary-pill strong {
+  display: block;
+}
+
+.summary-pill span {
+  margin-bottom: 6px;
+  color: #949494;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.summary-pill strong {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.summary-pill.accent {
+  background: rgba(255, 176, 92, 0.08);
+  border-color: rgba(255, 176, 92, 0.24);
 }
 
 .preview-grid {
@@ -367,6 +485,20 @@ input[type="file"] {
   .card-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .loading-overlay {
+    padding: 14px;
+  }
+
+  .loading-card {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .loading-ring {
+    width: 96px;
+    height: 96px;
   }
 
   .result-actions {
