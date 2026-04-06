@@ -9,6 +9,7 @@ const MAX_DIMENSION = 1920;
 
 function App() {
   const [file, setFile] = useState(null);
+  const [originalFile, setOriginalFile] = useState(null);
   const [preview, setPreview] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,61 @@ function App() {
     return `${size >= 10 || index === 0 ? size.toFixed(0) : size.toFixed(1)} ${units[index]}`;
   };
 
+  const getExtensionForType = (type, fallbackName = "upload") => {
+    const knownExtensions = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+    };
+
+    if (knownExtensions[type]) {
+      return knownExtensions[type];
+    }
+
+    const fallbackExtension = fallbackName.split(".").pop();
+    return fallbackExtension && fallbackExtension !== fallbackName
+      ? fallbackExtension
+      : "jpg";
+  };
+
+  const createUploadFile = (sourceFile, selected) => {
+    if (!(sourceFile instanceof Blob)) {
+      return selected;
+    }
+
+    const fileType = sourceFile.type || selected.type || "image/jpeg";
+    const baseName = selected.name.replace(/\.[^.]+$/, "") || "upload";
+    const extension = getExtensionForType(fileType, selected.name);
+    const nextName = `${baseName}-optimized.${extension}`;
+
+    return new File([sourceFile], nextName, {
+      type: fileType,
+      lastModified: Date.now(),
+    });
+  };
+
+  const extractErrorMessage = async (response) => {
+    const contentType = response.headers.get("content-type") || "";
+
+    try {
+      if (contentType.includes("application/json")) {
+        const data = await response.json();
+        return (
+          data?.detail ||
+          data?.error ||
+          data?.message ||
+          data?.image?.[0] ||
+          `Request failed with status ${response.status}.`
+        );
+      }
+
+      const text = (await response.text()).trim();
+      return text || `Request failed with status ${response.status}.`;
+    } catch {
+      return `Request failed with status ${response.status}.`;
+    }
+  };
+
   const handleChange = async (event) => {
     const selected = event.target.files?.[0];
 
@@ -55,6 +111,7 @@ function App() {
     setResult(null);
     setError("");
     setProgress(0);
+    setOriginalFile(selected);
 
     if (!selected.type.startsWith("image/")) {
       setFile(null);
@@ -77,17 +134,18 @@ function App() {
           updateProgress(8 + value * 0.5, "Compressing on your phone");
         },
       });
+      const uploadReadyFile = createUploadFile(compressedFile, selected);
 
       if (preview) {
         URL.revokeObjectURL(preview);
       }
 
-      setFile(compressedFile);
-      setPreview(URL.createObjectURL(compressedFile));
+      setFile(uploadReadyFile);
+      setPreview(URL.createObjectURL(uploadReadyFile));
       setFileStats({
         originalName: selected.name,
         originalSize: selected.size,
-        compressedSize: compressedFile.size,
+        compressedSize: uploadReadyFile.size,
       });
       setStatus("Compressed and ready to process.");
       updateProgress(100, "Compression complete");
@@ -146,7 +204,7 @@ function App() {
     }
 
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("image", file, file.name);
 
     setLoading(true);
     setError("");
@@ -161,7 +219,45 @@ function App() {
       });
 
       if (!response.ok) {
-        throw new Error("Unable to process the image right now.");
+        const serverMessage = await extractErrorMessage(response);
+
+        if (response.status === 400 && originalFile && file !== originalFile) {
+          const retryFormData = new FormData();
+          retryFormData.append("image", originalFile, originalFile.name);
+          updateProgress(36, "Retrying with original image");
+          setStatus("The optimized file was rejected. Retrying...");
+
+          const retryResponse = await fetch(`${API_BASE}/api/remove-bg/`, {
+            method: "POST",
+            body: retryFormData,
+          });
+
+          if (!retryResponse.ok) {
+            throw new Error(await extractErrorMessage(retryResponse));
+          }
+
+          const retryData = await retryResponse.json();
+
+          if (retryData.output_image) {
+            updateProgress(100, "Background removed");
+            setResult(retryData.output_image);
+            setStatus("Background removed successfully.");
+            return;
+          }
+
+          if (retryData.id) {
+            updateProgress(68, "AI is refining the cutout");
+            setStatus("Finishing the render...");
+            const outputImage = await pollStatus(retryData.id);
+            setResult(outputImage);
+            setStatus("Background removed successfully.");
+            return;
+          }
+
+          throw new Error("Unexpected response from the server.");
+        }
+
+        throw new Error(serverMessage);
       }
 
       const data = await response.json();
