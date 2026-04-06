@@ -153,12 +153,13 @@ img {
 }
 
 .loading-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 3;
   display: grid;
   place-items: center;
   padding: 24px;
+  overflow-y: auto;
   background:
     linear-gradient(180deg, rgba(8, 8, 8, 0.78), rgba(8, 8, 8, 0.92)),
     radial-gradient(circle at top, rgba(255, 186, 111, 0.14), transparent 45%);
@@ -488,10 +489,12 @@ input[type="file"] {
   }
 
   .loading-overlay {
-    padding: 14px;
+    place-items: start center;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 14px 14px;
   }
 
   .loading-card {
+    margin-top: 0;
     padding: 22px;
     border-radius: 22px;
   }
