@@ -1,19 +1,25 @@
-# AI Background Removal Frontend
+# 🎨 AI Background Removal Frontend
 
 A modern **React + Vite** web application for removing image backgrounds using AI.
-Designed with performance, user experience, and mobile optimization in mind.
+Built with a focus on performance, user experience, and real-world deployment using CI/CD.
 
 ---
 
-## 🚀 Features
+## 🚀 Live Demo
 
-* Upload images directly from device
-* Client-side image compression (faster uploads)
-* Real-time progress tracking
-* AI-powered background removal integration
-* Download processed PNG images
-* Mobile-friendly responsive UI
-* Smooth UX with loading states and feedback
+👉 http://3.150.235.217
+
+---
+
+## 🧠 Features
+
+* Upload images from device
+* Client-side image compression
+* Real-time processing status (polling)
+* AI-powered background removal
+* Download transparent PNG output
+* Fully responsive UI
+* Fast loading with optimized build
 
 ---
 
@@ -21,20 +27,18 @@ Designed with performance, user experience, and mobile optimization in mind.
 
 * **Frontend:** React (Vite)
 * **Styling:** CSS
-* **Image Compression:** browser-image-compression
+* **Image Processing:** browser-image-compression
 * **API Integration:** Fetch API
-* **Deployment:** Nginx (served as static files)
+* **Server:** Nginx
+* **CI/CD:** GitHub Actions
 
 ---
 
 ## 📂 Project Structure
 
-```id="c8jv5m"
+```id="f1jv2k"
 image_bg_removal_frontend/
 │── src/
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── styles.css
 │── public/
 │── index.html
 │── package.json
@@ -47,7 +51,7 @@ image_bg_removal_frontend/
 
 ### 1. Clone Repository
 
-```bash id="7tf8mx"
+```bash id="c3d9k2"
 git clone https://github.com/your-username/image_bg_removal_frontend.git
 cd image_bg_removal_frontend
 ```
@@ -56,47 +60,41 @@ cd image_bg_removal_frontend
 
 ### 2. Install Dependencies
 
-```bash id="4kw1xe"
+```bash id="n7x2q1"
 npm install
 ```
 
 ---
 
-### 3. Configure Environment
+### 3. Environment Setup
 
-Create a `.env` file:
+Create `.env` file:
 
-```env id="4q2jvn"
-VITE_API_URL=
+```env id="v8p1l0"
+VITE_API_URL=/api
 ```
 
-👉 Uses relative API path (`/api`) for seamless Nginx proxy integration.
+👉 Uses relative API path for Nginx proxy
 
 ---
 
 ### 4. Run Development Server
 
-```bash id="z9ny5c"
+```bash id="d4m7s2"
 npm run dev
-```
-
-👉 Open:
-
-```id="w7u4l2"
-http://localhost:5173
 ```
 
 ---
 
 ### 5. Build for Production
 
-```bash id="h7l9d1"
+```bash id="z8r2k1"
 npm run build
 ```
 
-👉 Output folder:
+Output:
 
-```id="q9t2bm"
+```id="q2m9t4"
 dist/
 ```
 
@@ -104,36 +102,63 @@ dist/
 
 ## 🔗 API Integration
 
-The frontend communicates with the backend via:
-
-```id="r6k2tq"
-/api/remove-bg/
-```
-
-```id="p4k1dx"
-/api/status/{id}/
-```
+* `POST /api/remove-bg/`
+* `GET /api/status/{id}/`
 
 ---
 
 ## 🔄 Workflow
 
-```id="5l8k3j"
-User Upload → Client Compression → API Request → Poll Status → Display Result → Download
+```id="w8x2k9"
+Upload → Compress → Send to API → Poll Status → Display Result → Download
 ```
 
 ---
 
-## 🌐 Deployment
+## 🌐 Deployment Architecture
 
-Frontend is served using **Nginx**:
+```id="p9k3x1"
+React (Vite Build) → Nginx → Django API → Celery → AI Processing → S3
+```
 
-* Static files → `/var/www/frontend`
-* API requests → proxied to Django backend
+---
 
-Example Nginx setup:
+## ⚡ CI/CD (GitHub Actions)
 
-```nginx id="q4v1xs"
+This project uses **GitHub Actions** for automatic deployment.
+
+### 🔄 Workflow
+
+* Push to `main`
+* Install dependencies
+* Build React app
+* Deploy to EC2 using SSH
+* Sync files to `/var/www/frontend`
+
+---
+
+### 🛠️ Deployment Config
+
+```yaml id="y7k3d1"
+rsync -avz --delete dist/ ubuntu@EC2:/var/www/frontend/
+```
+
+---
+
+## ⚠️ Important Deployment Notes
+
+* Node.js version **20+ required** (Vite compatibility)
+* Proper permissions required:
+
+```bash id="k3m9v2"
+sudo chown -R ubuntu:ubuntu /var/www/frontend
+```
+
+---
+
+## 🌐 Nginx Configuration
+
+```nginx id="n2k4x7"
 location / {
     root /var/www/frontend;
     index index.html;
@@ -151,28 +176,27 @@ location /api/ {
 
 * 📉 Image compression before upload
 * 🚀 Reduced API payload size
-* 🔄 Polling instead of blocking requests
-* 📱 Optimized for mobile devices
+* 🔄 Async polling instead of blocking
+* 📱 Mobile-first design
 
 ---
 
 ## 🧠 Key Learnings
 
-* Handling large file uploads efficiently
-* Client-side image optimization
-* Async UI updates with polling
-* Integrating frontend with scalable backend APIs
-* Deploying React apps using Nginx
+* React production build optimization
+* Nginx static hosting
+* CI/CD automation with GitHub Actions
+* Handling deployment permissions in Linux
+* Integrating frontend with async backend APIs
 
 ---
 
 ## 📌 Future Improvements
 
-* Drag & drop upload support
-* Image preview editing
-* Batch processing
+* Drag & drop upload
+* Progress bar improvements
 * Dark mode UI
-* Progress bar enhancements
+* Batch image processing
 
 ---
 
